@@ -3,11 +3,11 @@ module.exports = {
     getDataWithTotals: (res, statuscode, values, totalvalues, page, total_page, total) => {
         return res.json({
           status: statuscode,
-          data: values,
           limit: totalvalues,
           page: page,
           total_page: total_page,
-          total
+          total: total,
+          data: values
         })
       },
     getDataResponse: (res, statuscode, values, totalvalues, page, message) => {

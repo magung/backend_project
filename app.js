@@ -31,29 +31,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 var routes = require('./src/routes/routes');
-var routeProducts =require('./src/routes/products');
-var routeCategories= require('./src/routes/categories');
 var routeUsers = require('./src/routes/users');
+var routeProject = require('./src/routes/project');
+var routeSprint = require('./src/routes/sprint');
+var routeTask = require('./src/routes/task');
 
-app.use('/products', routeProducts);
-app.use('/categories', routeCategories);
+app.use('/task', routeTask);
+app.use('/sprint', routeSprint);
+app.use('/project', routeProject);
 app.use('/user', routeUsers);
 app.use('/', routes);
 
 
 app.listen(port);
 console.log("Started on server http://localhost:"+port);
-
-
-// app.post('/login', (req, res) =>{
-//     const user = {
-//         id : 1,
-//         username: 'agung',
-//         email: 'agung@gmail.com'
-//     }
-//     jwt.sign({user}, 'secretkey', (err,token) => {
-//         res.json({
-//             token
-//         })
-//     });
-// })
