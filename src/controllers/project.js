@@ -25,10 +25,10 @@ module.exports = {
 	insertMembersProject: async (req, res) => {
 		let pr_id = req.params.pr_id
 		if(pr_id <= 0) {
-			return response.dataManipulation(res, 500, "Project Id is required")
+			return response.dataManipulation(res, 201, "Project Id is required")
 		}
 		let users_id = req.body.user_id
-		
+		users_id.push(req.user_id)
 		let data_pr_user = []
 		for (let key = 0; key <  users_id.length; key++)
 		{
@@ -53,6 +53,64 @@ module.exports = {
 		}
 	},
 
+	updateMembersProject: async (req, res, next) => {
+		try {
+			let pr_id = req.params.pr_id
+			if(pr_id <= 0) {
+				return response.dataManipulation(res, 201, "Project Id is required")
+			}
+			let del = await modelProject.deleteMembersProject(pr_id)
+			let users_id = req.body.user_id
+			users_id.push(req.user_id)
+			let data_pr_user = []
+			for (let key = 0; key <  users_id.length; key++)
+			{
+				let user_id = users_id[key]
+				let data = {
+					pr_id : parseInt(req.params.pr_id),
+					user_id : parseInt(user_id)
+				}
+
+				await modelProject.insertMembersProject(data)
+				.then(result => {
+					data.pr_user_id = result.insertId
+					data_pr_user.push(data)
+				})
+				.catch(err=>{
+					return response.dataManipulation(res, 201, "Failed update project with user_id = " + user_id)
+				})
+				
+			}
+			if (data_pr_user.length > 0){
+				return response.dataManipulation(res, 200, "Success update project", data_pr_user)
+			}
+		} catch(e) {
+			next(e)
+		}
+	},
+
+	deleteMembersProject: async (req, res, next) => {
+		try {
+			let pr_id = req.params.pr_id
+			if(pr_id <= 0) {
+				return response.dataManipulation(res, 201, "Project Id is required")
+			}
+			await modelProject.deleteMembersProject(pr_id)
+			.then(result => {
+				if(result.affectedRows > 0){
+					return response.dataManipulation(res, 200, "Success delete project")
+				}else{
+					return response.dataManipulation(res, 201, "Failed delete project")
+				}
+			})
+			.catch(err=>{
+				return response.dataManipulation(res, 500, "Failed delete project")
+			})
+		} catch(e) {
+			next(e)
+		}
+	},
+
 	allProjects: async (req, res) => {
 		let user_id = req.user_id
 		let where = ' AND pu.user_id = ? GROUP BY pu.pr_id '
@@ -70,7 +128,7 @@ module.exports = {
 	getProject: async (req, res) => {
 		let user_id = req.user_id
 		let pr_id = parseInt(req.params.pr_id)
-		let where = ' AND pu.user_id = ? AND pu.pr_id = ? LIMIT 1 '
+		let where = ' AND pu.user_id = ? AND pu.pr_id = ? '
 		let data = [user_id, pr_id]
 		await modelProject.getAllProject(where, data)
 		.then(result => {

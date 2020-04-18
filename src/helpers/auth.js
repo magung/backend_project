@@ -27,6 +27,7 @@ module.exports = {
                     req.user_id = decoded.user_id
                     req.username = decoded.username
                     req.email = decoded.email
+                    req.usr_level_id = decoded.usr_level_id
                     next()
                 }else { throw new Error(decoded) }
             }catch(err){

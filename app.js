@@ -35,7 +35,9 @@ var routeUsers = require('./src/routes/users');
 var routeProject = require('./src/routes/project');
 var routeSprint = require('./src/routes/sprint');
 var routeTask = require('./src/routes/task');
+var routeReport = require('./src/routes/report');
 
+app.use('/report', routeReport)
 app.use('/task', routeTask);
 app.use('/sprint', routeSprint);
 app.use('/project', routeProject);

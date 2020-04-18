@@ -34,7 +34,6 @@ module.exports = {
         const data = {
             name : req.body.name,
             email : req.body.email,
-            usr_status : active
             //password : req.body.password,
         }
         const password = hash(req.body.password);
@@ -42,6 +41,7 @@ module.exports = {
         if(!isFormFalid(data)){
             return response.dataManipulation(res, 200, "Data not valid")
         }
+        data.usr_status = active
         modelUsers.register(data, password)
         .then(result=>{
             data.id = result.id
@@ -52,81 +52,46 @@ module.exports = {
             return response.dataManipulation(res, 201, "Failed register, email already exist")
         })
         
-        
-        // modelUsers.userReady(data.username)
-        // .then(result =>{
-        //     console.log('username already')
-        //     return response.dataManipulation(res, 201, "email or username already exists")
-        // })
-        // .catch(err => {
-            
-        // })
-
-        
     },
-    // REGISTER for admin
-    // regAdmin: (req, res)=>{
-    //     const data = {
-    //         name : req.body.name,
-    //         username : req.body.username,
-    //         email : req.body.email,
-    //         //password : req.body.password,
-    //         level: 'admin'
-    //     }
-    //     const password = hash(req.body.password);
-    //     //data.password = hash(data.password)
 
-    //     if(!isFormFalid(data)){
-    //         return response.dataManipulation(res, 200, "Data not valid")
-    //     }
-
-    //     modelUsers.register(data, password)
-    //     .then(result=>{
-    //         data.id = result.id
-    //         return response.dataManipulation(res, 200, "Success register admin", data)
-    //     })
-    //     .catch(err=>{
-    //         console.log(err)
-    //         return response.dataManipulation(res, 201, "Failed register, username or email already exist")
-    //     })
-    // },
-
-    // READ - get all users
+    allUsers: async (req, res, next )=>{
+        try {
+            const sortBy = req.query.sort_by || ' name ';
+            const sort = req.query.sort || ' ASC ';
+            const limit = parseInt(req.query.limit) || 10000;
+            const page = req.query.page || 1;
+            const skip = (parseInt(page)-1)* limit;
+            const search = req.query.search;
+            let user_id = req.user_id
+            console.log(user_id)
+            let total
+            await modelUsers.totalData(search, user_id)
+            .then(result => {
+                 total = result
+            })
+            .catch(err => console.log(err) );
+            console.log(total)
+            // let total_row = total.total
+            // let totalPage = total_row
+            await modelUsers.allUsers(search, sortBy, sort, skip, limit, user_id)
+            .then(result => {
     
-    // allUsers:(req, res)=>{
-    //     modelUsers.allUsers()
-    //     .then(result=>res.json(result))
-    //     .catch(err=>console.log(err))
-    // },
+                if(result.length !== 0) {
+                    let total_row = total[0].total
+                    let totalPage = Math.ceil(total_row / limit)
+                    return response.getDataWithTotals(res, 200, result, limit, page, totalPage, total_row)
+                } else {
+                    return response.getDataResponse(res, 404, null, null, null, "Data not Found")
+                }
+            })
+            .catch(err =>{
+                console.log(err)
+                return response.dataManipulation(res, 500, "Failed get all user")
+            })
 
-    allUsers:(req, res)=>{
-        const sortBy = req.query.sort_by || 'user_id';
-		const sort = req.query.sort || 'ASC';
-		const limit = parseInt(req.query.limit) || 10;
-        const page = req.query.page || 1;
-        const skip = (parseInt(page)-1)* limit;
-        const search = req.query.search;
-        let total
-        modelUsers.totalData(search)
-        .then(result => {
-             total = result
-        })
-        .catch(err => console.log(err) );
-        // let total_row = total.total
-        // let totalPage = total_row
-        modelUsers.allUsers(search, sortBy, sort, skip, limit, total)
-        .then(result => {
-            if(result.length !== 0) {
-                let total_row = total[0].total
-                let totalPage = Math.ceil(total_row / limit)
-                return response.getDataWithTotals(res, 200, result, limit, page, totalPage, total_row)
-            } else {
-                return response.getDataResponse(res, 404, null, null, null, "Data not Found")
-            }
-        })
-        .catch(err =>{
-            return response.dataManipulation(res, 500, "Failed get all user")
-        })
+        } catch(e){
+            next(e)
+        }
         
     },
 
@@ -157,12 +122,15 @@ module.exports = {
                 const load = {
                     user_id: result[0].user_id,
                     username: result[0].username,
-                    email: result[0].email
+                    email: result[0].email,
+                    usr_level_id: result[0].usr_level_id
                 }
                 jwt.sign(load, process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP}, (err, token)=>{
                     if(!err){
                         res.json({
-                            dataUser:load,
+                            status:200,
+                            message: "Success Login",
+                            data:load,
                             token: `${token}`})
                     }else{
                         console.log(err)
@@ -174,31 +142,6 @@ module.exports = {
             } else {
                 return response.dataManipulation(res, 400, "Email or password wrong")
             }
-            // if(result.length !== 0){
-            //     if(result[0].password == password){
-            //         const jwt =require('jsonwebtoken')
-            //         const load = {
-            //             userId: result[0].id,
-            //             username: result[0].username,
-            //             email: result[0].email,
-            //             level: result[0].level
-            //         }
-    
-            //         jwt.sign(load, process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP}, (err, token)=>{
-            //             if(!err){
-            //                 res.json({
-            //                     dataUser:load,
-            //                     token: `${token}`})
-            //             }else{console.log(err)}
-            //         })
-
-            //     }else{
-            //         return response.dataManipulation(res, 400, "Email and Password doesnt match")
-            //     }
-            // }else{
-            //     return response.dataManipulation(res, 400, "Email doesnt exist")
-            // }
-
         })
         .catch(err=>{
             console.log(err)
@@ -209,7 +152,7 @@ module.exports = {
     //UPDATE
     updateUser: async (req, res)=>{
         const id = req.user_id
-        const data={
+        let data={
             updated_date : moment().format('YYYY-MM-DD HH:mm:ss')
         }
         if(req.body.name) {
@@ -251,6 +194,9 @@ module.exports = {
         if(req.body.password) {
             const password = hash(req.body.password);
             data.password = password
+        }
+        if(req.body.usr_level_id) {
+            data.usr_level_id = req.body.usr_level_id
         }
         if(update) {
             await modelUsers.updateUser(data, id)

@@ -14,5 +14,7 @@ Route
  .post('/members/:pr_id', Auth.verifyToken, projectController.insertMembersProject)
  .delete('/:pr_id',Auth.verifyToken, projectController.deleteProject)
  .put('/:pr_id',Auth.verifyToken, projectController.updateProject)
+ .put('/members/:pr_id',Auth.verifyToken, projectController.updateMembersProject)
+ .delete('/members/:pr_id',Auth.verifyToken, projectController.deleteMembersProject)
 
  module.exports = Route

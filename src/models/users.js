@@ -36,21 +36,20 @@ module.exports = {
 
     getUser:(where, data)=>{
         return new Promise((resolve, reject)=>{
-            connection.query(`SELECT user_id, name, email, username FROM user WHERE 1=1` + where, data, (err, result)=>{
+            connection.query(`SELECT usr.user_id, usr.name, usr.email, usr.username, usr.usr_level_id, usr_lvl.level, usr.image FROM user usr LEFT JOIN user_level usr_lvl ON usr_lvl.usr_level_id = usr.usr_level_id WHERE 1=1` + where, data, (err, result)=>{
                 if(!err){resolve(result)}else{reject(err)}
             })
         })
     },
 
     //READ - get all data users
-    allUsers: (search, sortBy, sort, skip, limit) =>{
+    allUsers: (search, sortBy, sort, skip, limit, user_id) =>{
         return new Promise((resolve, reject) =>{
-
-            let query = `SELECT user_id, name, email, username, usr_status FROM user WHERE 1=1 `;
+            let query = `SELECT user_id, name, email, username, usr_status, usr_level_id FROM user WHERE 1=1 ` ;
             if(search){
                query += ` AND name LIKE "%${search}%" or email LIKE "%${search}%" `
             }
-            query += ` AND usr_status = "active" ORDER BY ${sortBy} ${sort} LIMIT ${skip}, ${limit}`;
+            query += ` AND usr_status = "active" AND user_id <> '${user_id}' ORDER BY ${sortBy} ${sort} LIMIT ${skip}, ${limit}`;
             connection.query(query, (err, result)=>{
                 if(!err){resolve(result)}else{reject(err)}
             })
@@ -58,9 +57,9 @@ module.exports = {
     },
 
     // get total data in database
-    totalData: (search) => {
+    totalData: (search, user_id) => {
         return new Promise((resolve, reject) =>{
-            let query = "SELECT COUNT(user_id) as 'total' FROM user WHERE usr_status = 'active' "
+            let query = `SELECT COUNT(user_id) as 'total' FROM user WHERE usr_status = 'active' AND user_id <> '${user_id}'`
             if(search){
                 query +=  ` AND name LIKE "%${search}%" or email LIKE "%${search}%" `
             }
