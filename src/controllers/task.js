@@ -11,18 +11,20 @@ module.exports = {
 			pr_id : parseInt(req.body.pr_id),
 			title : req.body.title,
             task_desc : req.body.task_desc,
-            req_by : req.body.req_by,
-            owned_by : req.body.owned_by,
-            label_id : req.body.label_id,
-            type_id : req.body.type_id,
-            priority : req.body.priority,
-            duration : req.body.duration,
-			created_by : req.user_id
+            req_by : parseInt(req.body.req_by),
+            owned_by : parseInt(req.body.owned_by),
+            label_id : parseInt(req.body.label_id),
+            type_id : parseInt(req.body.type_id),
+			priority_id : parseInt(req.body.priority_id),
+			status_id : parseInt(req.body.status_id),
+            duration : parseInt(req.body.duration),
+			created_by : parseInt(req.user_id),
+			created_date : moment().format('YYYY-MM-DD HH:mm:ss')
 		}
 
 		await modelTask.insertTask(data)
 		.then(result => {
-			data.sp_id = result.insertId
+			data.task_id = result.insertId
 			return response.dataManipulation(res, 200, "Success create task", data)
 		})
 		.catch(err=>{
@@ -35,7 +37,7 @@ module.exports = {
 		let where = ""
 		let data = []
 
-		modelTask.getTask(where, data)
+		await modelTask.getTask(where, data)
 		.then(result => {
 			return response.dataManipulation(res, 200, "Success get all task", result)
 		})
@@ -47,7 +49,7 @@ module.exports = {
 
 	getTaskById: async (req, res) => {
 		let ts_id = req.params.ts_id
-		let where = " AND ts.task_id = ?"
+		let where = " AND ts.task_id = ? "
 		let data = [ts_id]
 
 		modelTask.getTask(where, data)
@@ -76,26 +78,28 @@ module.exports = {
 				data.task_desc = req.body.task_desc
 			}
 			if(req.body.req_by) {
-				data.req_by = req.body.req_by
+				data.req_by = parseInt(req.body.req_by)
 			}
 			if(req.body.owned_by) {
-				data.owned_by = req.body.owned_by
+				data.owned_by = parseInt(req.body.owned_by)
 			}
 			if(req.body.label_id) {
-				data.label_id = req.body.label_id
+				data.label_id = parseInt(req.body.label_id)
 			}
 			if(req.body.type_id) {
-				data.type_id = req.body.type_id
+				data.type_id = parseInt(req.body.type_id)
 			}
-			if(req.body.priority) {
-				data.priority = req.body.priority
+			if(req.body.priority_id) {
+				data.priority_id = parseInt(req.body.priority_id)
+			}
+			if(req.body.status_id) {
+				data.status_id = parseInt(req.body.status_id)
 			}
 			if(req.body.duration) {
-				data.duration = req.body.duration
+				data.duration = parseInt(req.body.duration)
 			}
-			let result = await modelTask.updateTask(data, ts_id)
-			console.log(result)
 
+			let result = await modelTask.updateTask(data, ts_id)
 			if(result.affectedRows !== 0) {
 				return response.dataManipulation(res, 200, "Succes updating task")
 			}
@@ -128,11 +132,11 @@ module.exports = {
 
 	getSprintTask: async (req, res, next) => {
 		try {
-			let sp_id = req.params.sp_id
-			let title = req.query.title.toLowerCase()
-			console.log(title)
-			let where = " AND sp_id = ?"
+			let sp_id = parseInt(req.params.sp_id)
+			let title = req.query.title
+			let where = " AND ts.sp_id = ?"
 			if(req.query.title){
+				title = title.toLowerCase()
 				where += ` AND ts.title LIKE "%` + title + `%" `
 			}
 			where += " GROUP BY task_id "

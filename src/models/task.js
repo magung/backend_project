@@ -12,15 +12,18 @@ module.exports = {
         })
     },
 
-    getTask: (where, data, order = "") => {
+    getTask: (where = "", data = [], order = "") => {
         return new Promise((resolve, reject) =>{
-            let sql = "SELECT ts.task_id, ts.pr_id, ts.sp_id, ts.title, " + 
-                        "ts.task_desc, usr.name as req_by, us.name as owned_by, " + 
-                        "lb.label as label, ty.type as type, ts.priority, ts.duration " + 
-                        "FROM task ts JOIN user usr ON usr.user_id = ts.req_by " +
-                        "JOIN user us ON us.user_id = ts.owned_by " +
-                        "JOIN type ty ON ty.type_id = ts.type_id " +
-                        "JOIN label lb ON lb.label_id = ts.label_id WHERE 1=1 " + where + order
+            let sql = "SELECT ts.*, " + 
+                        " usr.name as req_by, us.name as owned_by, " + 
+                        " lb.label_name as label, ty.type as type, pri.priority_name as priority, sts.status as status " + 
+                        " FROM task ts INNER JOIN user usr ON usr.user_id = ts.req_by " +
+                        " INNER JOIN user us ON us.user_id = ts.owned_by " +
+                        " INNER JOIN type ty ON ty.type_id = ts.type_id " +
+                        " INNER JOIN label lb ON lb.label_id = ts.label_id " + 
+                        " INNER JOIN priority pri ON pri.priority_id = ts.priority_id " + 
+                        " INNER JOIN status sts ON sts.status_id = ts.status_id " + 
+                        " WHERE 1=1 " + where + order
             connection.query(sql, data, (err, result)=>{
                 if(!err){resolve(result)}else{reject(err)}
             })

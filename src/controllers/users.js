@@ -42,6 +42,7 @@ module.exports = {
             return response.dataManipulation(res, 200, "Data not valid")
         }
         data.usr_status = active
+        data.usr_level_id = req.body.level
         modelUsers.register(data, password)
         .then(result=>{
             data.id = result.id

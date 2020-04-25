@@ -30,13 +30,24 @@ app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var routes = require('./src/routes/routes');
-var routeUsers = require('./src/routes/users');
-var routeProject = require('./src/routes/project');
-var routeSprint = require('./src/routes/sprint');
-var routeTask = require('./src/routes/task');
-var routeReport = require('./src/routes/report');
+let path = './src/routes/'
+var routes = require(path + 'routes');
+var routeUsers = require(path + 'users');
+var routeProject = require(path + 'project');
+var routeSprint = require(path + 'sprint');
+var routeTask = require(path + 'task');
+var routeReport = require(path + 'report');
+var routeLabel = require(path + 'label');
+var routePriority = require(path + 'priority');
+var routeType = require(path + 'type');
+var routeStatus = require(path + 'status');
+var routeLevel = require(path + 'user_level');
 
+app.use('/level', routeLevel)
+app.use('/status', routeStatus)
+app.use('/type', routeType)
+app.use('/priority', routePriority)
+app.use('/label', routeLabel)
 app.use('/report', routeReport)
 app.use('/task', routeTask);
 app.use('/sprint', routeSprint);
