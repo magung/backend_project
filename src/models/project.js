@@ -28,7 +28,7 @@ module.exports = {
         })
     },
 
-    getAllProject: (where, data, order = " ORDER BY pu.created_date DESC ") => {
+    getAllProject: (where, data, order = " ORDER BY pr.pr_name ASC ") => {
         return new Promise((resolve, reject) => {
             connection.query(`SELECT pu.pr_id, pr.pr_name, pr.pr_description FROM project pr LEFT JOIN project_user pu ON pr.pr_id = pu.pr_id WHERE 1=1 ` + 
             where + order, data, (err, result) => {
