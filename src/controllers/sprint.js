@@ -144,11 +144,10 @@ module.exports = {
 	},
 
 	getSprint: async (req, res) => {
-		let user_id = req.user_id
 		let sp_id = parseInt(req.params.sp_id)
-		let where = ' AND su.user_id = ? AND su.sp_id = ? LIMIT 1 '
-		let data = [user_id, sp_id]
-		await modelSprint.getAllSprint(where, data)
+		let where = ' AND sp_id = ? LIMIT 1 '
+		let data = [sp_id]
+		await modelSprint.getSprint(where, data)
 		.then(result => {
 			return response.dataManipulation(res, 200, "Success get sprint", result)
 		})
