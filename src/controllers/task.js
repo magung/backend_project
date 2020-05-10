@@ -17,7 +17,7 @@ module.exports = {
             type_id : parseInt(req.body.type_id),
 			priority_id : parseInt(req.body.priority_id),
 			status_id : parseInt(req.body.status_id),
-            duration : parseInt(req.body.duration),
+            deadline :req.body.deadline,
 			created_by : parseInt(req.user_id),
 			created_date : moment().format('YYYY-MM-DD HH:mm:ss')
 		}
@@ -95,8 +95,8 @@ module.exports = {
 			if(req.body.status_id) {
 				data.status_id = parseInt(req.body.status_id)
 			}
-			if(req.body.duration) {
-				data.duration = parseInt(req.body.duration)
+			if(req.body.deadline) {
+				data.deadline = parseInt(req.body.deadline)
 			}
 
 			let result = await modelTask.updateTask(data, ts_id)
@@ -134,10 +134,15 @@ module.exports = {
 		try {
 			let sp_id = parseInt(req.params.sp_id)
 			let title = req.query.title
+			let owned_by = req.query.owned_by
 			let where = " AND ts.sp_id = ?"
-			if(req.query.title){
+			if(title){
 				title = title.toLowerCase()
 				where += ` AND ts.title LIKE "%` + title + `%" `
+			}
+			if(owned_by){
+				owned_by = owned_by.toLowerCase()
+				where += ` AND ts.owned_by = ` + parseInt(owned_by)
 			}
 			where += " GROUP BY task_id "
 			let data = [sp_id]
