@@ -15,7 +15,7 @@ module.exports = {
     getTask: (where = "", data = [], order = "") => {
         return new Promise((resolve, reject) =>{
             let sql = "SELECT ts.*, " + 
-                        " usr.name as req_by, us.name as owned_by, " + 
+                        " usr.name as request_by_name, us.name as owned_by_name, " + 
                         " lb.label_name as label, ty.type as type, pri.priority_name as priority, sts.status as status " + 
                         " FROM task ts INNER JOIN user usr ON usr.user_id = ts.req_by " +
                         " INNER JOIN user us ON us.user_id = ts.owned_by " +
