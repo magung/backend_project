@@ -10,7 +10,8 @@ module.exports = {
 			pr_id : parseInt(req.body.pr_id),
 			sp_name : req.body.sprint_name,
 			sp_description : req.body.description,
-			sp_owner : req.user_id
+			sp_owner : req.user_id,
+			deadline : req.body.deadline
 		}
 
 		await modelSprint.insertSprint(data)
@@ -128,11 +129,31 @@ module.exports = {
 		})
 	},
 
-	getSprintProject: async (req, res) => {
+	allProgressSprints: async (req, res) => {
 		let user_id = req.user_id
-		let where = ' AND sp.pr_id = ? AND pr.user_id = ? GROUP BY sp.sp_id '
+		let where = ' AND sp.pr_id = ? AND pr.user_id = ? '
+		if(req.query.sp_id) {
+			let sp_id = parseInt(req.query.sp_id)
+			where += ' AND sp.sp_id = ' + sp_id
+		}
+		where += ' GROUP BY sp.sp_id '
 		let pr_id = req.params.pr_id
 		let data = [pr_id, user_id]
+		await modelSprint.allProgressSprints(where, data)
+		.then(result => {
+			return response.dataManipulation(res, 200, "Success get sprint on project id = " + pr_id, result)
+		})
+		.catch(err => {
+			console.log(err)
+			return response.dataManipulation(res, 500, "Failed get all sprint")
+		})
+	},
+
+	getSprintProject: async (req, res) => {
+		let user_id = req.user_id
+		let where = ' AND sp.pr_id = ? GROUP BY sp.sp_id '
+		let pr_id = req.params.pr_id
+		let data = [pr_id]
 		await modelSprint.getSprint(where, data)
 		.then(result => {
 			return response.dataManipulation(res, 200, "Success get sprint on project id = " + pr_id, result)
@@ -168,6 +189,9 @@ module.exports = {
 		}
 		if(req.body.description) {
 			data.sp_description = req.body.description
+		}
+		if(req.body.deadline) {
+			data.deadline = req.body.deadline
 		}
 		await modelSprint.updateSprint(data, sp_id, user_id)
 		.then(result => {

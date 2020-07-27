@@ -35,6 +35,7 @@ module.exports = {
             const page = req.query.page || 1;
             const skip = (parseInt(page)-1)* limit;
             const search = req.query.search;
+            const pr_id = req.query.pr_id;
             let total
 
             modelReport.totalData(search)
@@ -46,6 +47,10 @@ module.exports = {
             if (search) {
                 where += ` AND report LIKE "%${search}%" ` 
             }
+            if(pr_id){
+                where += ` AND rp.pr_id = '${pr_id}'`
+            }
+
             where += " ORDER BY " + sortBy + sort + " LIMIT " + skip + ", " + limit
             await modelReport.getReport(where)
             .then(result => {

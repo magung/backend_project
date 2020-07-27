@@ -57,4 +57,5 @@ app.use('/', routes);
 
 
 app.listen(port);
+module.exports.rootPath = __dirname
 console.log("Started on server http://localhost:"+port);

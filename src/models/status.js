@@ -3,7 +3,7 @@ const connection = require('../database/conn');
 
 module.exports = {
     insertStatus: (data) => {
-        return new Promise((resolve, reject) =>{
+        return new Promise((resolve, reject) => {
             connection.query(`INSERT INTO status set ?`, data, (err, result)=>{
                 if(!err){resolve(result)}else{reject(err)}
             })

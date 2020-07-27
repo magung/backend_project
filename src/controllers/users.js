@@ -3,6 +3,19 @@ const modelUsers = require('../models/users')
 const response = require('../res')
 const moment = require('moment')
 require('dotenv').config();
+const fs = require('fs')
+const app = require('../../app')
+const multer = require('multer');
+//Multer
+const storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        cb(null, './uploads/user_image')
+    },
+    filename: function(req, file, cb){
+        cb(null, "profile" + moment().format('YYYY-MM-DD HH:mm:ss') + file.originalname)
+    }
+});
+const upload = multer({storage})
 
 const isFormFalid = (data)=>{
     const Joi = require('@hapi/joi')
@@ -96,12 +109,29 @@ module.exports = {
         
     },
 
-    getUser: (req, res) => {
+    getProfile: (req, res) => {
         let where = ' AND user_id = ? '
         let data = [req.user_id]
         modelUsers.getUser(where, data)
         .then(result => {
-            return response.getDataWithTotals(res, 200, result)
+            return response.getDataWithTotals(res, 200, result[0])
+        })
+        .catch(err => {
+            console.log(err)
+            return response.dataManipulation(res, 500, "Failed get user")
+        })
+    },
+
+    getUser: (req, res) => {
+        let where = ' AND user_id = ? '
+        let data = [req.params.user_id]
+        modelUsers.getUser(where, data)
+        .then(result => {
+            let user = "User Not Found"
+            if(result.length !== 0) {
+                user = result[0]
+            }
+            return response.getDataWithTotals(res, 200, user)
         })
         .catch(err => {
             console.log(err)
@@ -148,6 +178,46 @@ module.exports = {
             console.log(err)
             return response.dataManipulation(res, 500, "Failed Login user")
         })
+    },
+
+    updatePhotoUser : async (req, res) => {
+        const id = req.params.user_id
+        let where = ' AND user_id = ? '
+        let where_id = [id]
+        let user
+        let data={
+            updated_date : moment().format('YYYY-MM-DD HH:mm:ss')
+        }
+        if(req.file.filename) {
+            data.image = req.file.filename
+        }
+        await modelUsers.getUser(where, where_id)
+        .then(async result => {
+            if(result.length !== 0) {
+                user = result[0]
+            }
+            await modelUsers.updateUser(data, id)
+            .then(result=> {
+                if(result.affectedRows !== 0) {
+                    if(user.image != null && user.image !== ""){
+                        fs.unlinkSync(app.rootPath + '/uploads/user_image/' + user.image)
+                    }
+                    return response.dataManipulation(res, 200, "Succes updating photo user")
+                }
+                else {
+                    return response.dataManipulation(res, 401, "Failed to update photo user")
+                }
+            })
+            .catch(err=>{
+                console.log(err)
+                return response.dataManipulation(res, 500, "Failed to update photo user (server error)")
+            })
+        })
+        .catch(err=>{
+            console.log(err)
+            return response.dataManipulation(res, 500, "Failed to update photo user (server error)")
+        })
+
     },
 
     //UPDATE

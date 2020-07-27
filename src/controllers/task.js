@@ -36,6 +36,14 @@ module.exports = {
 	getAllTasks: async (req, res) => {
 		let where = ""
 		let data = []
+		if(req.query.pr_id){
+			where += " AND ts.pr_id = ? "
+			data.push(req.query.pr_id)
+		}
+		if(req.query.status) {
+			where += " AND sts.status = ? "
+			data.push(req.query.status)
+		}
 
 		await modelTask.getTask(where, data)
 		.then(result => {
@@ -96,7 +104,7 @@ module.exports = {
 				data.status_id = parseInt(req.body.status_id)
 			}
 			if(req.body.deadline) {
-				data.deadline = parseInt(req.body.deadline)
+				data.deadline = req.body.deadline
 			}
 
 			let result = await modelTask.updateTask(data, ts_id)
@@ -135,6 +143,7 @@ module.exports = {
 			let sp_id = parseInt(req.params.sp_id)
 			let title = req.query.title
 			let owned_by = req.query.owned_by
+			let request_by = req.query.request_by
 			let where = " AND ts.sp_id = ?"
 			if(title){
 				title = title.toLowerCase()
@@ -143,6 +152,10 @@ module.exports = {
 			if(owned_by){
 				owned_by = owned_by.toLowerCase()
 				where += ` AND ts.owned_by = ` + parseInt(owned_by)
+			}
+			if(request_by){
+				request_by = request_by.toLowerCase()
+				where += ` AND ts.req_by = ` + parseInt(request_by)
 			}
 			where += " GROUP BY task_id "
 			let data = [sp_id]

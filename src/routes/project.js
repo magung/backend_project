@@ -8,6 +8,7 @@ const Auth = require('../helpers/auth')
 Route
  // url pages and implementation routes
  .get('/', Auth.verifyToken, projectController.allProjects)
+ .get('/progress', Auth.verifyToken, projectController.getProgressProject)
  .get('/:pr_id', Auth.verifyToken, projectController.getProject)
  .get('/members/:pr_id', Auth.verifyToken, projectController.getMembersProject)
  .post('/', Auth.verifyToken, projectController.insertProject)

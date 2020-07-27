@@ -1,6 +1,7 @@
 'use strict';
 var response = require('../res');
 var modelProject = require('../models/project');
+var modelSprint = require('../models/sprint');
 const moment = require('moment');
 module.exports = {
 	
@@ -9,6 +10,7 @@ module.exports = {
 		let data = {
 			pr_name : req.body.project_name,
 			pr_description : req.body.description,
+			deadline: req.body.deadline,
 			pr_owner : req.user_id
 		}
 
@@ -113,8 +115,8 @@ module.exports = {
 
 	allProjects: async (req, res) => {
 		let user_id = req.user_id
-		let where = ' AND pu.user_id = ? GROUP BY pu.pr_id '
-		let data = [user_id]
+		let where = ' AND pu.user_id = ? OR pr.pr_owner = ? GROUP BY pu.pr_id '
+		let data = [user_id, user_id]
 		await modelProject.getAllProject(where, data)
 		.then(result => {
 			return response.dataManipulation(res, 200, "Success get all project", result)
@@ -151,6 +153,9 @@ module.exports = {
 		}
 		if(req.body.description) {
 			data.pr_description = req.body.description
+		}
+		if(req.body.deadline) {
+			data.deadline = req.body.deadline
 		}
 		await modelProject.updateProject(data, pr_id, user_id)
 		.then(result => {
@@ -197,6 +202,53 @@ module.exports = {
 			console.log(err)
 			return response.dataManipulation(res, 500, "Failed get members project")
 		})
+	},
+
+	getProgressProject: async (req, res) => {
+		let user_id = req.user_id
+		
+		let where = ' AND pu.user_id = ? '
+		let data = [user_id]
+		if(req.query.pr_id) {
+			where += ' AND pu.pr_id = ? '
+			data.push(req.query.pr_id)
+		}
+		where += ' GROUP BY pu.pr_id '
+		await modelProject.getAllProject(where, data)
+		.then( async result => {
+			let projects = []
+			for(let i =0; i<result.length; i++) {
+				let whereSprint = ' AND sp.pr_id = ? AND pr.user_id = ? GROUP BY sp.sp_id '
+				
+				let pr_id = result[i].pr_id
+				let dataSprint = [pr_id, user_id]
+				await modelSprint.allProgressSprints(whereSprint, dataSprint)
+				.then(results => {
+					result[i].sprints = results
+				})
+				.catch(err => {
+					console.log(err)
+				})
+
+				let whereMember = ' AND pu.pr_id = ? GROUP BY pu.user_id'
+				let dataMember = [pr_id]
+				await modelProject.getMembersProject(whereMember, dataMember)
+				.then(results => {
+					result[i].members = results
+				})
+				.catch(err => {
+					console.log(err)
+				})
+
+				projects.push(result[i])
+			}
+			return response.dataManipulation(res, 200, "Success get progress project", result)
+		})
+		.catch(err => {
+			console.log(err)
+			return response.dataManipulation(res, 500, "Failed progress project")
+		})
+		
 	}
     
 }

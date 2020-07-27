@@ -24,7 +24,7 @@ module.exports = {
 
     getReport: (where) => {
         return new Promise((resolve, reject) => {
-            let sql = "SELECT rp.rp_id, rp.report, rp.user_id, usr.name, pr.pr_name, sp.sp_name " +
+            let sql = "SELECT rp.*, usr.name, pr.pr_name, sp.sp_name " +
                         " FROM report rp " +
                         " JOIN user usr ON usr.user_id = rp.user_id " +
                         " JOIN project pr ON pr.pr_id = rp.pr_id " +

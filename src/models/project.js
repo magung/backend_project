@@ -30,7 +30,7 @@ module.exports = {
 
     getAllProject: (where, data, order = " ORDER BY pr.pr_name ASC ") => {
         return new Promise((resolve, reject) => {
-            connection.query(`SELECT pu.pr_id, pr.pr_name, pr.pr_description FROM project pr LEFT JOIN project_user pu ON pr.pr_id = pu.pr_id WHERE 1=1 ` + 
+            connection.query(`SELECT pu.*, pr.*, usr.name as pr_owner_name, usr.image FROM project pr JOIN project_user pu ON pr.pr_id = pu.pr_id JOIN user usr ON pr.pr_owner = usr.user_id WHERE 1=1 ` + 
             where + order, data, (err, result) => {
                 if(!err){resolve(result)}else{reject(err)}
             })
@@ -53,9 +53,13 @@ module.exports = {
         })
     },
 
-    getMembersProject:(where, data, order = " ORDER BY pu.created_date DESC, pu.updated_date DESC") => {
+    getMembersProject:(where, data, order = " ORDER BY usr.usr_level_id") => {
         return new Promise((resolve, reject) => {
-            connection.query(`SELECT pu.pr_user_id, pu.user_id, usr.name, usr.email, usr.username FROM project_user pu JOIN user usr ON usr.user_id = pu.user_id WHERE 1=1 ` + where + order, data, (err, result) => {
+            let query = `SELECT pu.pr_user_id, pu.user_id, usr.name, usr.email, usr.username, usr.usr_level_id, usr_lvl.level, usr.image FROM project_user pu 
+                        JOIN user usr ON usr.user_id = pu.user_id 
+                        JOIN user_level usr_lvl ON usr_lvl.usr_level_id = usr.usr_level_id
+                        WHERE 1=1 `
+            connection.query( query + where + order, data, (err, result) => {
                 if(!err){resolve(result)}else{reject(err)}
             })
         })

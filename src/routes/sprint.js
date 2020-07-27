@@ -10,6 +10,7 @@ Route
  .get('/', Auth.verifyToken, sprintController.allSprints)
  .get('/:sp_id', Auth.verifyToken, sprintController.getSprint)
  .get('/members/:sp_id', Auth.verifyToken, sprintController.getMembersSprint)
+ .get('/progress/:pr_id', Auth.verifyToken, sprintController.allProgressSprints)
  .get('/project/:pr_id', Auth.verifyToken, sprintController.getSprintProject)
  .post('/', Auth.verifyToken, sprintController.insertSprint)
  .post('/members/:sp_id', Auth.verifyToken, sprintController.insertMembersSprint)
